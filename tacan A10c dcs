@@ -1,0 +1,89 @@
+#define DCSBIOS_IRQ_SERIAL
+#include "DcsBios.h"
+#include <TM1637TinyDisplay.h>
+#include <LedControl.h>
+
+String TACAN = ""; // Declare global new string variable
+char Digit0 = ""; // Declare global new character variable
+char Digit1 = "";//  Declare global new character variable
+char Digit2 = "";//  Declare global new character variable
+char Digit3 = "";//  Declare global new character variable
+int TACAN_power = 1;
+
+
+
+
+
+int Tacan_ingame1; // hold value from DCS for ones
+int Tacan_ingame10; // hold value from DCS for tens
+int Tacan_ingame100; // hold value from DCS for hundreds
+
+
+//FIRST - 4 DIGIT 7 SEGMENT DISPLAY-  tacan
+// Module connection pins (Digital Pins)
+#define CLK 2
+#define DIO 3
+TM1637TinyDisplay display(CLK, DIO); //set up the 4-Digit Display
+
+
+DcsBios::Switch2Pos tacanTestBtn("TACAN_TEST_BTN", 23);
+DcsBios::LED tacanTest(0x10da, 0x0400, 13);
+DcsBios::PotentiometerEWMA<5, 128, 5> tacanVol("TACAN_VOL", A0);
+const byte tacanModePins[5] = {4, 5, 6, 7, 8};
+DcsBios::SwitchMultiPos tacanMode("TACAN_MODE", tacanModePins, 5);
+DcsBios::Switch2Pos tacanXy("TACAN_XY", 22);
+DcsBios::RotaryEncoder tacan10("TACAN_10", "DEC", "INC", 9, 10);
+DcsBios::RotaryEncoder tacan1("TACAN_1", "DEC", "INC", 11, 12);
+
+
+void onTacan10Change(unsigned int newValue) {
+  display.showNumber(newValue, true,2, 0);     
+}
+DcsBios::IntegerBuffer tacan10Buffer(0x1158, 0x0f00, 8, onTacan10Change);
+
+
+void onTacan1Change(unsigned int newValue) {
+ display.showNumber(newValue, false,1, 2); 
+}
+DcsBios::IntegerBuffer tacan1Buffer(0x1158, 0xf000, 12, onTacan1Change);
+
+
+void onTacanXyChange(unsigned int newValue) {
+ display.showString (newValue ,1, 3); // affiche la partie chaîne en seulement le 4ème chiffre
+}
+DcsBios::IntegerBuffer tacanXyBuffer(0x1168, 0x000f, 1, onTacanXyChange);
+
+// Canal TACAN
+void onTacanChannelChange (char * newValue) {
+TACAN = newValue; // Stocke la chaîne de caractères entrante dans un nouveau nom de variable de chaîne
+Digit0 = TACAN.charAt (0); // récupère une valeur de caractère individuelle à cet index spécifique dans la chaîne
+Digit1 = TACAN.charAt (1);
+Digit2 = TACAN.charAt (2);
+Digit3 = TACAN.charAt (3);
+if (TACAN_power == 0)
+display.showNumberDec(newValue);
+
+}
+DcsBios :: StringBuffer <4> tacanChannelBuffer (0x1162, onTacanChannelChange);
+
+
+
+void setup() {
+display.setBrightness(4);
+DcsBios::setup();
+}
+
+void loop() {
+   DcsBios::loop();
+   String TACAN = ""; // Declare global new string variable
+char Digit0 = ""; // Declare global new character variable
+char Digit1 = "";//  Declare global new character variable
+char Digit2 = "";//  Declare global new character variable
+char Digit3 = "";//  Declare global new character variable
+int TACAN_power = 1;
+}
+   
+
+
+
+ 
